@@ -76,6 +76,7 @@ int main (int argc, char *argv[])
 
         switch (opcode)
         {
+            //LIT
             case 1:
                 if (bp == gp)
                 {
@@ -320,6 +321,7 @@ int main (int argc, char *argv[])
                             }
 
                         }
+                        print_execution(i, "GTR", l, m, pas, pc, bp, sp, dp, pas, gp );
                         break;
                     case 13:
                     //GEQ
@@ -348,14 +350,15 @@ int main (int argc, char *argv[])
                             }
 
                         }
+                        print_execution(i, "GEQ", l, m, pas, pc, bp, sp, dp, pas, gp );
                         break;   
                 }
                 case 3:
                 //LOD L m
-                    if(base(l) == gp)
+                    if(bp == gp)
                     {
                         dp = dp + 1;
-                        pas[dp] = pas[base(l) - m];
+                        pas[dp] = pas[gp + m];
                     }
                     else
                     {
@@ -370,11 +373,12 @@ int main (int argc, char *argv[])
                             pas[sp] = pas[base(l) - m]; 
                         }
                     }
+                    print_execution(i, "LOD", l, m, pas, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 4:
                     //STO L m
-                    if(base(l) == gp)
+                    if(bp == gp)
                     {
                         pas[gp + m] = pas[dp];
                         dp = dp - 1;
@@ -384,7 +388,7 @@ int main (int argc, char *argv[])
                     {
                         if(base(l) == gp)
                         {
-                                
+                            pas[gp + m] = pas[sp];
                             sp = sp + 1;
                                 
                         }
@@ -395,6 +399,7 @@ int main (int argc, char *argv[])
                             
                         }
                     }
+                    print_execution(i, "STO", l, m, pas, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 5:
@@ -404,7 +409,7 @@ int main (int argc, char *argv[])
                     pas[sp - 3] = pc;              // return address (RA)
                     bp = sp - 1;
                     pc = m;
-
+                    print_execution(i, "CAL", l, m, pas, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 6:
@@ -417,13 +422,14 @@ int main (int argc, char *argv[])
                     {
                         sp = sp - m;
                     }
+                    print_execution(i, "INC", l, m, pas, pc, bp, sp, dp, pas, gp );
                     break;
                     
 
                 case 7:
                     //JmP 0 m
                     pc = m;
-
+                    print_execution(i, "JMP", l, m, pas, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 8:    
@@ -444,6 +450,7 @@ int main (int argc, char *argv[])
                         }
                         sp = sp + 1;
                     }
+                    print_execution(i, "JPC", l, m, pas, pc, bp, sp, dp, pas, gp );
                     break;
                 
                 case 9:
@@ -461,6 +468,7 @@ int main (int argc, char *argv[])
                                 printf("%d", pas[sp]);
                                 sp = sp + 1;
                             }
+                            print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
                             break;
 
                         case 2:
@@ -475,11 +483,13 @@ int main (int argc, char *argv[])
                                 sp = sp - 1;
                                 scanf("%d", pas[sp]);
                             }
+                            print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
                             break;
 
                         case 3:
                             //SYS 03
-                            halt = 1;
+                            halt = 0;
+                            print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
                             break;
                     }
                 
@@ -492,6 +502,29 @@ int main (int argc, char *argv[])
 
 
     return 0;
+}
+void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int SP, int DP, int *pas, int GP)
+{
+    int i;
+    // print out instruction and registers
+    printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, l, m, PC, BP, SP, DP);
+
+    // print data section
+    for (i = GP; i <= DP; i++)
+    {
+        printf("%d ", pas[i]);
+        printf("\n");
+    }
+    
+    // print stack
+    printf("\tstack : ");
+
+    for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
+    {
+        printf("%d ", pas[i]);
+        printf("\n");
+    }
+    
 }
 
 /**********************************************/
