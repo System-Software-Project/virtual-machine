@@ -10,13 +10,15 @@ typedef struct instruction
     int m;
 } instruction;
 
+// Starting variables
+int gp, ic, dp, free, pc, sp, bp, program_length, opcode, l, m, halt = 0;
+int pas [MAX_PAS_LENGTH + 1] = {0};
 
 int main (int argc, char *argv[])
 {
     FILE *fp;
 
-    // Starting variables
-    int gp, ic, dp, free, pc, sp, bp, program_length, opcode, l, m, halt;
+    
 
     gp = ic;    //Global Pointer – Points to DATA segment
     dp = ic -1;  //Data Pointer – To access variables in Main
@@ -27,7 +29,7 @@ int main (int argc, char *argv[])
     program_length = 0;
   
     // Initialize all the values to the process address space to zero
-    int pas [MAX_PAS_LENGTH + 1] = {0};
+    
     
     FILE *fp = NULL;
     fp = fopen(argv[1], "r");
@@ -69,7 +71,7 @@ int main (int argc, char *argv[])
         l = pas[i + 1];
         m = pas[i + 2];
 
-        if (halt == 1)
+        if (halt == 0)
         {
             break;
         }
@@ -88,6 +90,7 @@ int main (int argc, char *argv[])
                     sp = sp - 1;
                     pas[sp] = m;
                 }
+                print_execution(i, "LIT", l, m, pc, bp, sp, dp, pas, gp);
                 break;
             case 2: 
                 switch (m)
@@ -97,6 +100,7 @@ int main (int argc, char *argv[])
                         sp = bp + 1;
                         bp = pas[sp - 2];
                         pc = pas[sp - 3];
+                        print_execution(i, "RTN", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // NEG
                     case 1:
@@ -107,7 +111,8 @@ int main (int argc, char *argv[])
                         else
                         {
                             pas[sp] = -1 * pas[sp];
-                        }   
+                        }
+                        print_execution(i, "NEG", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // ADD
                     case 2:
@@ -121,6 +126,7 @@ int main (int argc, char *argv[])
                             sp = sp + 1;
                             pas[sp] = pas[sp] + pas[sp - 1];
                         }
+                        print_execution(i, "ADD", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // SUB
                     case 3: 
@@ -134,6 +140,7 @@ int main (int argc, char *argv[])
                             sp = sp + 1;
                             pas[sp] = pas[sp] + pas[sp - 1];
                         }
+                        print_execution(i, "SUB", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // MUL
                     case 4: 
@@ -147,6 +154,7 @@ int main (int argc, char *argv[])
                             sp = sp + 1;
                             pas[sp] = pas[sp] * pas[sp - 1];
                         }
+                        print_execution(i, "MUL", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // DIV
                     case 5: 
@@ -160,6 +168,7 @@ int main (int argc, char *argv[])
                             sp = sp + 1;
                             pas[sp] = pas[sp] / pas[sp - 1];
                         }
+                        print_execution(i, "DIV", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // ODD
                     case 6: 
@@ -171,6 +180,7 @@ int main (int argc, char *argv[])
                         {
                             pas[sp] = pas[sp] % 2;
                         }
+                        print_execution(i, "ODD", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // MOD
                     case 7: 
@@ -184,6 +194,7 @@ int main (int argc, char *argv[])
                             sp = sp + 1;
                             pas[sp] = pas[sp] % pas[sp - 1];
                         }
+                        print_execution(i, "MOD", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // EQL
                     case 8: 
@@ -212,6 +223,7 @@ int main (int argc, char *argv[])
                                 pas[sp] = 0;
                             }
                         }
+                        print_execution(i, "EQL", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     // NEQ
                     case 9: 
@@ -239,6 +251,7 @@ int main (int argc, char *argv[])
                                 pas[sp] = 0;
                             }
                         }
+                        print_execution(i, "NEQ", l, m, pc, bp, sp, dp, pas, gp);
                         break;    
                     // LSS
                     case 10: 
@@ -266,6 +279,7 @@ int main (int argc, char *argv[])
                                 pas[sp] = 0;
                             }
                         }
+                        print_execution(i, "LSS", l, m, pc, bp, sp, dp, pas, gp);
                         break; 
                     // LEQ
                     case 11: 
@@ -293,6 +307,7 @@ int main (int argc, char *argv[])
                                 pas[sp] = 0;
                             }
                         }
+                        print_execution(i, "LEQ", l, m, pc, bp, sp, dp, pas, gp);
                         break;
                     case 12:
                     //GTR
@@ -489,7 +504,10 @@ int main (int argc, char *argv[])
                         case 3:
                             //SYS 03
                             halt = 0;
+<<<<<<< HEAD
                             print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
+=======
+>>>>>>> 415d3a9d95f2a300dd9c1fbc5b4656fa56f44aa9
                             break;
                     }
                 
@@ -527,6 +545,28 @@ void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int
     
 }
 
+void print_execution(int line, char *opname, int l, int m, int PC, int BP, int SP, int DP, int *pas, int GP)
+{
+    int i; 
+    // print out instruction and registers
+    printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, l, m, PC, BP, SP, DP);
+
+    // print data section
+    for (i = GP; i <= DP; i++)
+    {
+        printf("%d ", pas[i]);
+    }
+    printf("\n");
+    //print stack
+    printf("\tstack : ");
+    for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
+    {
+        printf("%d ", pas[i]);
+    }
+    printf("\n");
+}
+
+
 /**********************************************/
 /*Find base L levels down */
 /*                        */
@@ -534,7 +574,7 @@ void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int
 int base(int l)
 {
     int arb = bp;      // arb = activation record base
-    while ( l > 0)     // find base L levels down
+    while (l > 0)     // find base L levels down
     {
         arb = pas[arb];
         l--;
