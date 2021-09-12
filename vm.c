@@ -10,19 +10,21 @@ typedef struct instruction
     int m;
 } instruction;
 
+void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int SP, int DP, int *pas, int GP);
+int base(int l);
+
 // Starting variables
-int gp, ic, dp, free, pc, sp, bp, program_length, opcode, l, m, halt = 0;
+int gp, ic = 0, dp, freePoints, pc, sp, bp , program_length, opcode, l, m, halt = 1;
 int pas [MAX_PAS_LENGTH + 1] = {0};
 
 int main (int argc, char *argv[])
 {
     FILE *fp;
 
-    
 
     gp = ic;    //Global Pointer – Points to DATA segment
-    dp = ic -1;  //Data Pointer – To access variables in Main
-    free = ic + 40;  // FREE points to Heap
+    dp = ic - 1;  //Data Pointer – To access variables in Main
+    freePoints = ic + 40;  // FREE points to Heap
     bp = ic; // Points to base of DATA or activation records
     pc = 0; // Stack pointer – Points to top of stack  
     sp = MAX_PAS_LENGTH;  
@@ -30,8 +32,7 @@ int main (int argc, char *argv[])
   
     // Initialize all the values to the process address space to zero
     
-    
-    FILE *fp = NULL;
+    fp = NULL;
     fp = fopen(argv[1], "r");
    
     if (fp == NULL)
@@ -39,41 +40,51 @@ int main (int argc, char *argv[])
         return EXIT_FAILURE;
     }
     
-    int i = 1;
+    int i = 0;
     while(!feof(fp))
     {
         fscanf(fp, "%d", &pas[i]);
-        
         // For checking when the end of a line has been reached
-        if ((i % 3 == 0) && (i == 0))
+        if ((i % 3 == 0) && (i != 0))
         {
             program_length++;
         }
         
         i++;
     }
+    program_length++;
     ic = i;
 
     // Initialize the CPU register values after getting everything into the PAS, updating the values here
     bp = program_length * 3;
     gp = bp;
     dp = ic - 1;
-    free = ic + 40;
+    freePoints = ic + 40;
 
     i = 0;
 
+    
+
     // Moves the counter, i along the PAS so that we can store each of the values as opcode, l, or m
-    while (i < (program_length * 3))
-    {
+    while (1)
+    {   
         i = pc;
+        
+        if (halt == 0)
+        {
+            break;
+        }
+        
+        
 
         opcode = pas[i];
         l = pas[i + 1];
         m = pas[i + 2];
+        //printf("The new values: %d %d %d", opcode, l, m);
 
-        if (halt == 0)
+        if (opcode != 7)
         {
-            break;
+            pc = pc + 3;
         }
 
         switch (opcode)
@@ -336,7 +347,7 @@ int main (int argc, char *argv[])
                             }
 
                         }
-                        print_execution(i, "GTR", l, m, pas, pc, bp, sp, dp, pas, gp );
+                        print_execution(i, "GTR", l, m, pc, bp, sp, dp, pas, gp );
                         break;
                     case 13:
                     //GEQ
@@ -365,7 +376,7 @@ int main (int argc, char *argv[])
                             }
 
                         }
-                        print_execution(i, "GEQ", l, m, pas, pc, bp, sp, dp, pas, gp );
+                        print_execution(i, "GEQ", l, m, pc, bp, sp, dp, pas, gp );
                         break;   
                 }
                 case 3:
@@ -388,7 +399,7 @@ int main (int argc, char *argv[])
                             pas[sp] = pas[base(l) - m]; 
                         }
                     }
-                    print_execution(i, "LOD", l, m, pas, pc, bp, sp, dp, pas, gp );
+                    print_execution(i, "LOD", l, m, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 4:
@@ -414,7 +425,7 @@ int main (int argc, char *argv[])
                             
                         }
                     }
-                    print_execution(i, "STO", l, m, pas, pc, bp, sp, dp, pas, gp );
+                    print_execution(i, "STO", l, m, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 5:
@@ -424,7 +435,7 @@ int main (int argc, char *argv[])
                     pas[sp - 3] = pc;              // return address (RA)
                     bp = sp - 1;
                     pc = m;
-                    print_execution(i, "CAL", l, m, pas, pc, bp, sp, dp, pas, gp );
+                    print_execution(i, "CAL", l, m, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 6:
@@ -437,14 +448,14 @@ int main (int argc, char *argv[])
                     {
                         sp = sp - m;
                     }
-                    print_execution(i, "INC", l, m, pas, pc, bp, sp, dp, pas, gp );
+                    print_execution(i, "INC", l, m, pc, bp, sp, dp, pas, gp );
                     break;
                     
 
                 case 7:
                     //JmP 0 m
                     pc = m;
-                    print_execution(i, "JMP", l, m, pas, pc, bp, sp, dp, pas, gp );
+                    print_execution(i, "JMP", l, m, pc, bp, sp, dp, pas, gp );
                     break;
 
                 case 8:    
@@ -465,7 +476,7 @@ int main (int argc, char *argv[])
                         }
                         sp = sp + 1;
                     }
-                    print_execution(i, "JPC", l, m, pas, pc, bp, sp, dp, pas, gp );
+                    print_execution(i, "JPC", l, m, pc, bp, sp, dp, pas, gp );
                     break;
                 
                 case 9:
@@ -483,7 +494,7 @@ int main (int argc, char *argv[])
                                 printf("%d", pas[sp]);
                                 sp = sp + 1;
                             }
-                            print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
+                            print_execution(i, "SYS", l, m, pc, bp, sp, dp, pas, gp );
                             break;
 
                         case 2:
@@ -491,41 +502,46 @@ int main (int argc, char *argv[])
                             if(bp == gp)
                             {
                                 dp = dp + 1;
-                                scanf("%d", pas[dp]);
+                                printf("\nPlease Enter an Integer: ");
+                                scanf("%d", &pas[dp]);
                             }
                             else
                             {
                                 sp = sp - 1;
-                                scanf("%d", pas[sp]);
+                                printf("\nPlease Enter an Integer: ");
+                                scanf("%d", &pas[sp]);
                             }
-                            print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
+                            print_execution(i, "SYS", l, m, pc, bp, sp, dp, pas, gp );
                             break;
 
                         case 3:
                             //SYS 03
                             halt = 0;
-<<<<<<< HEAD
-                            print_execution(i, "SYS", l, m, pas, pc, bp, sp, dp, pas, gp );
-=======
->>>>>>> 415d3a9d95f2a300dd9c1fbc5b4656fa56f44aa9
+
+                            print_execution(i, "SYS", l, m, pc, bp, sp, dp, pas, gp );
                             break;
                     }
                 
                 
 
             }
+        
+        
+        //pc = pc + 3;
+        
     }
     
     
+    
 
-
+    fclose(fp);
     return 0;
 }
 void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int SP, int DP, int *pas, int GP)
 {
     int i;
     // print out instruction and registers
-    printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, l, m, PC, BP, SP, DP);
+    printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line  / 3, opname, l, m, PC, BP, SP, DP);
 
     // print data section
     for (i = GP; i <= DP; i++)
@@ -545,26 +561,6 @@ void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int
     
 }
 
-void print_execution(int line, char *opname, int l, int m, int PC, int BP, int SP, int DP, int *pas, int GP)
-{
-    int i; 
-    // print out instruction and registers
-    printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, l, m, PC, BP, SP, DP);
-
-    // print data section
-    for (i = GP; i <= DP; i++)
-    {
-        printf("%d ", pas[i]);
-    }
-    printf("\n");
-    //print stack
-    printf("\tstack : ");
-    for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
-    {
-        printf("%d ", pas[i]);
-    }
-    printf("\n");
-}
 
 
 /**********************************************/
