@@ -158,7 +158,7 @@ int main (int argc, char *argv[])
                         if (bp == gp)
                         {
                             dp = dp - 1;
-                            pas[dp] = pas[dp] + pas[dp + 1];
+                            pas[dp] = pas[dp] * pas[dp + 1];
                         }
                         else
                         {
@@ -379,6 +379,7 @@ int main (int argc, char *argv[])
                         print_execution(i, "GEQ", l, m, pc, bp, sp, dp, pas, gp );
                         break;   
                 }
+                break;
                 case 3:
                 //LOD L m
                     if(bp == gp)
@@ -442,7 +443,7 @@ int main (int argc, char *argv[])
                     //INC 0 m
                     if(bp == gp)
                     {
-                        gp = gp + m;
+                        dp = dp + m;
                     }
                     else
                     {
@@ -521,7 +522,7 @@ int main (int argc, char *argv[])
                             print_execution(i, "SYS", l, m, pc, bp, sp, dp, pas, gp );
                             break;
                     }
-                
+                break;
                 
 
             }
