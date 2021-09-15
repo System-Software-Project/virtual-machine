@@ -1,9 +1,12 @@
+//Justin Miller
+//Noah Law
+//COP3402 FALL 21 VM Proj 1
 #include <stdio.h>
 #include <stdlib.h>
 
 #define MAX_PAS_LENGTH 500
 
-typedef struct instruction
+typedef struct instruction//struct for instructs
 {
     int opcode;
     int l;
@@ -71,7 +74,7 @@ int main (int argc, char *argv[])
     {   
         i = pc;
         
-        if (halt == 0)
+        if (halt == 0)//stops program if halt is triggered by SYS call
         {
             break;
         }
@@ -102,7 +105,7 @@ int main (int argc, char *argv[])
                     sp = sp - 1;
                     pas[sp] = m;
                 }
-                print_execution(i, "LIT", l, m, pc, bp, sp, dp, pas, gp);
+                print_execution(i, "LIT", l, m, pc, bp, sp, dp, pas, gp);//these print outputs as program runs
                 break;
             case 2: 
                 switch (m)
