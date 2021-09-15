@@ -63,7 +63,8 @@ int main (int argc, char *argv[])
 
     i = 0;
 
-    
+    printf("\t\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
+    printf("Initial values: \t\t%d\t%d\t%d\t%d\n", pc, bp, sp, dp);
 
     // Moves the counter, i along the PAS so that we can store each of the values as opcode, l, or m
     while (1)
@@ -487,12 +488,12 @@ int main (int argc, char *argv[])
                             //SYS 0 1
                             if(bp == gp)
                             {
-                                printf("%d", pas[dp]);
+                                printf("\nTop of Stack Value: %d\n", pas[dp]);
                                 dp = dp - 1;
                             }
                             else
                             {
-                                printf("%d", pas[sp]);
+                                printf("\nTop of Stack Value: %d\n", pas[sp]);
                                 sp = sp + 1;
                             }
                             print_execution(i, "SYS", l, m, pc, bp, sp, dp, pas, gp );
@@ -542,24 +543,25 @@ void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int
 {
     int i;
     // print out instruction and registers
+    
     printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line  / 3, opname, l, m, PC, BP, SP, DP);
-
+    
     // print data section
     for (i = GP; i <= DP; i++)
     {
         printf("%d ", pas[i]);
-        printf("\n");
+        
     }
-    
+    printf("\n");
     // print stack
     printf("\tstack : ");
-
+    
     for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
     {
         printf("%d ", pas[i]);
-        printf("\n");
+        
     }
-    
+    printf("\n");
 }
 
 
