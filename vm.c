@@ -52,6 +52,7 @@ int main (int argc, char *argv[])
         
         i++;
     }
+    
     program_length++;
     ic = i;
 
@@ -64,6 +65,8 @@ int main (int argc, char *argv[])
     i = 0;
 
     
+    printf("\tPC\t\tBP\t\tSP\tDP\t\tdata\n");
+    printf("Initial values: %d %d %d %d\n", pc, bp, sp, dp);
 
     // Moves the counter, i along the PAS so that we can store each of the values as opcode, l, or m
     while (1)
@@ -487,12 +490,12 @@ int main (int argc, char *argv[])
                             //SYS 0 1
                             if(bp == gp)
                             {
-                                printf("%d", pas[dp]);
+                                printf("Top of Stack Value: %d\n", pas[dp]);
                                 dp = dp - 1;
                             }
                             else
                             {
-                                printf("%d", pas[sp]);
+                                printf("Top of Stack Value: %d\n", pas[sp]);
                                 sp = sp + 1;
                             }
                             print_execution(i, "SYS", l, m, pc, bp, sp, dp, pas, gp );
@@ -557,8 +560,8 @@ void print_execution(int line, char *opname, int  l,  int m, int PC, int BP, int
     for (i = MAX_PAS_LENGTH - 1; i >= SP; i--)
     {
         printf("%d ", pas[i]);
-        printf("\n");
     }
+    printf("\n");
     
 }
 
