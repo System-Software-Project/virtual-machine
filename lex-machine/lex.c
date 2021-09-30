@@ -8,8 +8,6 @@
 	you MUST make a note of that in you readme file, otherwise you will lose 
 	5 points.
 */
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -18,359 +16,317 @@
 #define MAX_NUMBER_TOKENS 500
 #define MAX_IDENT_LEN 11
 #define MAX_NUMBER_LEN 5
+//TODO -
+//Comments not handled
 
-// Global variables
 lexeme *list;
-
-// Used to find the current index and the index that should be right after
 int lex_index = 0;
 int look_ahead = 0;
+int temp_string_index = 0;
 int list_counter = 0;
 int digit_counter = 1;
-int temp_value = 0; 
+int temp_value;
+
 char temp_value_array[5];
-// Used for temporarily taking characters from the input string to compare to the if-else statments
-char temp_string[12];
-int temp_string_index = 0;
+char temp_string[12];//for checking reserved words etc
 
-// Checks if we've currently hit a comment
-int comment_flag = 0;
+int comment_flag = 0;//flags if reading comments until \r\n
 
-// Functional prototypes
 void printlexerror(int type);
 void printtokens();
 
 
+
 lexeme *lexanalyzer(char *input)
 {
-	list = malloc(MAX_NUMBER_TOKENS * sizeof(lexeme));
+	temp_value_array[0] = '\0';
+	list = malloc(sizeof(lexeme) * MAX_NUMBER_TOKENS);
 
-	if (input == NULL)
+	if(input == NULL)
 	{
 		return NULL;
 	}
 
-	while (input[lex_index] != '\0')
+	while(input[lex_index] != '\0')
 	{
 		look_ahead = lex_index + 1;
 
-		// Check if the input is on a comment
-		if (input[lex_index] == '/' && input[look_ahead] == '/')
+		if(input[lex_index] == '/' && input[look_ahead] == '/')
 		{
 			comment_flag = 1;
 		}
-		else if (iscntrl(input[look_ahead]))
+		else if(iscntrl(input[look_ahead]))
 		{
 			comment_flag = 0;
 		}
-		if (comment_flag == 0)
+
+		if(comment_flag == 0)
 		{
-			// Grabbing characters to store into
-			if (temp_string_index > 12)
+		
+			if(temp_string_index > 12)
 			{
 				printlexerror(4);
-				return list;
+				return NULL;
 			}
-			if (isalpha(input[lex_index]) && isalpha(input[look_ahead]) != 0)
+			if(isalpha(input[lex_index]) && isalpha(input[look_ahead]) != 0)
 			{
+
 				temp_string[temp_string_index] = input[lex_index];
 				temp_string_index++;
+
 			}
-			else if (isalpha(input[lex_index]) && (isalpha(input[look_ahead] == 0 || isdigit(input[look_ahead] == 0))))
+			else if(isalpha(input[lex_index]) && ((isalpha(input[look_ahead]) == 0) || (isdigit(input[look_ahead] == 0))))
 			{
+
 				temp_string[temp_string_index] = input[lex_index];
 				temp_string[temp_string_index + 1] = '\0';
 				temp_string_index = 0;
 
-				// Check to see if the temp string is equal to any reserved words
-				if (strcmp(temp_string, "const") == 0)
+				if(strcmp(temp_string,"const") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 1;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "var") == 0)
+				else if(strcmp(temp_string,"var") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 2;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "procedure") == 0)
+				else if(strcmp(temp_string,"procedure") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 3;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "call") == 0)
+				else if(strcmp(temp_string,"call") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 11;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "if") == 0)
+				else if(strcmp(temp_string,"if") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 8;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "then") == 0)
+				else if(strcmp(temp_string,"then") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 9;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "else") == 0)
+				else if(strcmp(temp_string,"else") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 10;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "while") == 0)
+				else if(strcmp(temp_string,"while") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 6;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "do") == 0)
+				else if(strcmp(temp_string,"do") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 7;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "begin") == 0)
+				else if(strcmp(temp_string,"begin") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 4;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "end") == 0)
+				else if(strcmp(temp_string,"end") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 5;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "read") == 0)
+				else if(strcmp(temp_string,"read") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 13;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "write") == 0)
+				else if(strcmp(temp_string,"write") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 12;
-					list_counter++;
 				}
-				else if (strcmp(temp_string, "odd") == 0)
+				else if(strcmp(temp_string,"odd") == 0)
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 28;
-					list_counter++;
 				}
-				// Chances are, it is an identifier if it is none of these
-				else
+				else//for identifiers
 				{
 					strcpy(list[list_counter].name, temp_string);
 					list[list_counter].type = 14;
-					list_counter++;
 				}
 				temp_string[0] = '\0';
+				list_counter++;
 			}
-
-			// Check for an assigner
-			if (input[lex_index] == ':' && input[look_ahead] == '=')
+			//check for assign
+			if(input[lex_index] == ':' && input[look_ahead] == '=')
 			{
-				strcpy(list[list_counter].name, ":=");	
+				strcpy(list[list_counter].name, ":=");
 				list[list_counter].type = 16;
 				list_counter++;
 			}
-			else if (input[lex_index] == ':' && input[look_ahead] != '=')
+			else if(input[lex_index] == ':' && input[look_ahead] != '=')
 			{
 				printlexerror(1);
-				return list;
+				return NULL;
 			}
-
-			// Check for an neq
-			if (input[lex_index] == '!' && input[look_ahead] == '=')
+			//NEQ
+			if(input[lex_index] == '!' && input[look_ahead] == '=')
 			{
-				strcpy(list[list_counter].name, "!=");	
+				strcpy(list[list_counter].name, "!=");
 				list[list_counter].type = 23;
 				list_counter++;
 			}
-			else if (input[lex_index] == '!' && input[look_ahead] != '=')
+			else if(input[lex_index] == '!' && input[look_ahead] != '=')
 			{
 				printlexerror(1);
-				return list;
+				return NULL;
 			}
-
-			// Check for an neq
-			if (input[lex_index] == '=' && input[look_ahead] == '=')
+			//EQ
+			if(input[lex_index] == '=' && input[look_ahead] == '=')
 			{
-				strcpy(list[list_counter].name, "==");	
+				strcpy(list[list_counter].name, "==");
 				list[list_counter].type = 22;
 				list_counter++;
 			}
-			else if (input[lex_index] == '=' && input[look_ahead] != '=')
+			else if(input[lex_index] == '=' && input[look_ahead] != '=')
 			{
 				printlexerror(1);
-				return list;
+				return NULL;
 			}
-
-
-
-			// Check for an geq or gtr
-			if (input[lex_index] == '>' && input[look_ahead] == '=')
+			//check for GTR GTE
+			if(input[lex_index] == '>' && input[look_ahead] == '=')
 			{
-				strcpy(list[list_counter].name, ">=");	
+				strcpy(list[list_counter].name, ">=");
 				list[list_counter].type = 27;
 				list_counter++;
 			}
-			else if (input[lex_index] == '>' && isspace(input[look_ahead]))
+			else if(input[lex_index] == '>' && isspace(input[look_ahead]))
 			{
-				strcpy(list[list_counter].name, ">");	
+				strcpy(list[list_counter].name, ">");
 				list[list_counter].type = 26;
 				list_counter++;
 			}
-
-			// Check for an leq or neq or less
-			if (input[lex_index] == '<' && input[look_ahead] == '=')
+			//LEQ LES
+			else if(input[lex_index] == '<' && input[look_ahead] == '=')
 			{
-				strcpy(list[list_counter].name, "<=");	
+				strcpy(list[list_counter].name, "<=");
 				list[list_counter].type = 25;
 				list_counter++;
 			}
-			else if (input[lex_index] == '<' && isspace(input[look_ahead]))
+			else if(input[lex_index] == '<' && isspace(input[look_ahead]))
 			{
-				strcpy(list[list_counter].name, "<");	
+				strcpy(list[list_counter].name, "<");
 				list[list_counter].type = 24;
 				list_counter++;
 			}
-
-			// Check for a comma
-			if (input[lex_index] == ',')
+			//check ,
+			if(input[lex_index] == ',')
 			{
-				strcpy(list[list_counter].name, ",");	
+				strcpy(list[list_counter].name, ",");
 				list[list_counter].type = 31;
 				list_counter++;
 			}
-
-			// Check for a period
-			if (input[lex_index] == '.')
+			//check .
+			if(input[lex_index] == '.')
 			{
-				strcpy(list[list_counter].name, ".");	
+				strcpy(list[list_counter].name, ".");
 				list[list_counter].type = 32;
 				list_counter++;
 			}
-
-			// Check for a semicolon
-			if (input[lex_index] == ';')
+			//check ;
+			if(input[lex_index] == ';')
 			{
-				strcpy(list[list_counter].name, ";");	
+				strcpy(list[list_counter].name, ";");
 				list[list_counter].type = 33;
 				list_counter++;
 			}
-
-			// Check for a semicolon
-			if (input[lex_index] == ';')
+			//check (
+			if(input[lex_index] == '(')
 			{
-				strcpy(list[list_counter].name, ";");	
-				list[list_counter].type = 33;
-				list_counter++;
-			}
-
-			// Check for r parenthesis
-			if (input[lex_index] == '(')
-			{
-				strcpy(list[list_counter].name, "(");	
+				strcpy(list[list_counter].name, "(");
 				list[list_counter].type = 29;
 				list_counter++;
 			}
-
-			// Check for l parenthesis
-			if (input[lex_index] == ')')
+			//check )
+			if(input[lex_index] == ')')
 			{
-				strcpy(list[list_counter].name, ")");	
+				strcpy(list[list_counter].name, ")");
 				list[list_counter].type = 30;
 				list_counter++;
 			}
-
-			// Check for mod
-			if (input[lex_index] == '%')
+			//check %
+			if(input[lex_index] == '%')
 			{
-				strcpy(list[list_counter].name, "%");	
+				strcpy(list[list_counter].name, "%");
 				list[list_counter].type = 21;
 				list_counter++;
 			}
-
-			// Check for mult
-			if (input[lex_index] == '*')
+			//check *
+			if(input[lex_index] == '*')
 			{
-				strcpy(list[list_counter].name, "*");	
+				strcpy(list[list_counter].name, "*");
 				list[list_counter].type = 19;
 				list_counter++;
 			}
-
-			// Check for div
-			if (input[lex_index] == '/' && isspace(input[look_ahead]))
+			//check /
+			if(input[lex_index] == '/' && isspace(input[look_ahead]))
 			{
-				strcpy(list[list_counter].name, "/");	
+				strcpy(list[list_counter].name, "/");
 				list[list_counter].type = 20;
 				list_counter++;
 			}
-
-			// Check for plus
-			if (input[lex_index] == '+' && isspace(input[look_ahead]))
+			//check +
+			if(input[lex_index] == '+')
 			{
-				strcpy(list[list_counter].name, "+");	
+				strcpy(list[list_counter].name, "+");
 				list[list_counter].type = 17;
 				list_counter++;
 			}
-
-			// Check for minus
-			if (input[lex_index] == '-' && isspace(input[look_ahead]))
+			//check -
+			if(input[lex_index] == '-')
 			{
-				strcpy(list[list_counter].name, "-");	
+				strcpy(list[list_counter].name, "-");
 				list[list_counter].type = 18;
 				list_counter++;
 			}
-			
-			// Check for digit
-			if (digit_counter > 5)
+			if(digit_counter > 5)
 			{
 				printlexerror(3);
-				return list;
+				return NULL;
 			}
-			if (isdigit(input[lex_index]) && isdigit(look_ahead) && digit_counter <= 5)
+			if(isdigit(input[lex_index]) && isdigit(input[look_ahead]) && (digit_counter <= 5))
 			{
 				temp_value_array[digit_counter - 1] = input[lex_index];
 				digit_counter++;
 			}
-			else if (isdigit(input[lex_index]) && (isdigit(look_ahead) == 0 || isalpha(look_ahead) == 0) && digit_counter <= 5)
+			else if(isdigit(input[lex_index]) && (isdigit(input[look_ahead]) == 0 || isalpha(input[look_ahead]) == 0) && (digit_counter <= 5))
 			{
 				temp_value_array[digit_counter - 1] = input[lex_index];
 				digit_counter = 0;
 				temp_value = atoi(temp_value_array);
 				strcpy(list[list_counter].name, temp_value_array);
-				list[list_counter].value = temp_value;
+				list[list_counter].value  = temp_value;
 				list[list_counter].type = 15;
 			}
-			else if (isdigit(input[lex_index - 1]) && (isdigit(look_ahead) || isalpha(look_ahead)) && digit_counter > 5)
+			else if(isdigit(input[lex_index]) && (isdigit(input[look_ahead]) == 0 || isalpha(input[look_ahead]) == 0) && (digit_counter > 5))
 			{
 				printlexerror(3);
-				return list;
+				return NULL;
 			}
-
-			
-
-			
+		
 			lex_index++;
 		}
 		lex_index++;
 	}
-	if (list != NULL)
+
+	if(list != NULL)
 	{
 		printtokens();
 	}
+
 	return list;
 }
 
